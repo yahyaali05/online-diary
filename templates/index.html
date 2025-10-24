@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if user %}
+    <h3>Hello {{ user }} 👋</h3>
+    <a href="{{ url_for('add_entry') }}" class="btn btn-success mb-3">+ New Entry</a>
+    {% if entries %}
+      {% for e in entries %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">{{ e.title }}</h5>
+            <p class="card-text">{{ e.content }}</p>
+            {% if e.image_filename %}
+              <img src="{{ url_for('static', filename='uploads/' + e.image_filename) }}" class="img-fluid rounded mb-2">
+            {% endif %}
+            <small class="text-muted">{{ e.date.strftime('%Y-%m-%d %H:%M') }}</small><br>
+            <a href="{{ url_for('delete_entry', id=e.id) }}" class="btn btn-sm btn-danger mt-2">Delete</a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No entries yet. Create your first one!</p>
+    {% endif %}
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+  {% else %}
+    <h1>Welcome!</h1>
+    <p>This is your simple online diary app.</p>
+    <a href="{{ url_for('login') }}" class="btn btn-success">Login</a>
+    <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+  {% endif %}
+{% endblock %}
