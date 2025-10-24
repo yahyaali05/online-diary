@@ -8,9 +8,8 @@ import os
 # ---------- SETUP ----------
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-secret'
-db_url = os.getenv('DATABASE_URL', 'sqlite:///diary.db')
-# Tipp: Für Neon/Render verwende das Format postgresql+psycopg://...
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+db_url = os.getenv("DATABASE_URL", "sqlite:///diary.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 
 # absoluter Pfad für Uploads (funktioniert immer)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -132,6 +131,8 @@ def delete_entry(id):
 if not os.path.exists('instance'):
     os.mkdir('instance')
 with app.app_context():
+    # Upload-Ordner lokal sicher anlegen (online egal, schadet aber nicht)
+    os.makedirs(os.path.join("static", "uploads"), exist_ok=True)
     db.create_all()
 
 if __name__ == '__main__':
