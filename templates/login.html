@@ -1,16 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Login</h2>
-<form method="POST">
-  <div class="mb-3">
-    <label>Email</label>
-    <input type="email" name="email" class="form-control" required>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+  <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+    <h3 class="text-center mb-4">🔐 Login</h3>
+
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100">Login</button>
+    </form>
+
+    <p class="text-center mt-3 mb-0">
+      No account? <a href="{{ url_for('register') }}">Register here</a>
+    </p>
   </div>
-  <div class="mb-3">
-    <label>Password</label>
-    <input type="password" name="password" class="form-control" required>
-  </div>
-  <button type="submit" class="btn btn-success">Login</button>
-</form>
-<p class="mt-2">No account? <a href="{{ url_for('register') }}">Register here</a></p>
+</div>
 {% endblock %}

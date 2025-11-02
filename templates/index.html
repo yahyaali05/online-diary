@@ -1,30 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
   {% if user %}
-    <h3>Hello {{ user }} 👋</h3>
+    <h3 class="mb-4">Hello {{ user }} 👋</h3>
     <a href="{{ url_for('add_entry') }}" class="btn btn-success mb-3">+ New Entry</a>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mb-3 float-end">Logout</a>
+
     {% if entries %}
-      {% for e in entries %}
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">{{ e.title }}</h5>
-            <p class="card-text">{{ e.content }}</p>
-            {% if e.image_filename %}
-              <img src="{{ url_for('static', filename='uploads/' + e.image_filename) }}" class="img-fluid rounded mb-2">
-            {% endif %}
-            <small class="text-muted">{{ e.date.strftime('%Y-%m-%d %H:%M') }}</small><br>
-            <a href="{{ url_for('delete_entry', id=e.id) }}" class="btn btn-sm btn-danger mt-2">Delete</a>
+      <div class="row g-4">
+        {% for e in entries %}
+          <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+              {% if e.image_filename %}
+                <!-- Wenn Cloudinary URL -->
+                {% if e.image_filename.startswith('http') %}
+                  <img src="{{ e.image_filename }}" class="card-img-top" alt="Entry Image">
+                {% else %}
+                  <!-- Lokales Bild -->
+                  <img src="{{ url_for('static', filename='uploads/' + e.image_filename) }}" class="card-img-top" alt="Entry Image">
+                {% endif %}
+              {% else %}
+                <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" alt="No Image">
+              {% endif %}
+              
+              <div class="card-body">
+                <h5 class="card-title">{{ e.title }}</h5>
+                <p class="card-text">{{ e.content[:150] }}{% if e.content|length > 150 %}...{% endif %}</p>
+                <small class="text-muted">{{ e.date.strftime('%d.%m.%Y %H:%M') }}</small><br>
+                <a href="{{ url_for('delete_entry', id=e.id) }}" class="btn btn-sm btn-danger mt-2">Delete</a>
+              </div>
+            </div>
           </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      </div>
     {% else %}
       <p>No entries yet. Create your first one!</p>
     {% endif %}
-    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
   {% else %}
-    <h1>Welcome!</h1>
-    <p>This is your simple online diary app.</p>
-    <a href="{{ url_for('login') }}" class="btn btn-success">Login</a>
-    <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+    <div class="text-center mt-5">
+      <h1>Welcome!</h1>
+      <p>This is your simple online diary app.</p>
+      <a href="{{ url_for('login') }}" class="btn btn-success">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+    </div>
   {% endif %}
 {% endblock %}
