@@ -4,6 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # ---------- SETUP ----------
 app = Flask(__name__)
@@ -11,7 +14,15 @@ app.config['SECRET_KEY'] = 'dev-secret'
 db_url = os.getenv("DATABASE_URL", "sqlite:///diary.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 
-# absoluter Pfad für Uploads (funktioniert immer)
+# Cloudinary Konfiguration
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+# absoluter Pfad für lokale Uploads (Backup-Funktion)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -90,17 +101,15 @@ def add_entry():
         content = request.form['content']
         file = request.files.get('image')
 
-        filename = None
+        image_url = None
         if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            # stelle sicher, dass der Ordner existiert
-            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file.save(filepath)
-            print(f"✅ File saved at: {filepath}")  # Debug-Ausgabe im Terminal
+            # Hochladen zu Cloudinary
+            upload_result = cloudinary.uploader.upload(file, folder="online_diary")
+            image_url = upload_result.get("secure_url")
+            print("✅ Uploaded to Cloudinary:", image_url)
 
         user = User.query.filter_by(email=session['user']).first()
-        new_entry = Entry(title=title, content=content, image_filename=filename, user_id=user.id)
+        new_entry = Entry(title=title, content=content, image_filename=image_url, user_id=user.id)
         db.session.add(new_entry)
         db.session.commit()
         flash('New entry added!')
@@ -117,11 +126,6 @@ def delete_entry(id):
     if entry.user_id != user.id:
         flash('Not allowed.')
         return redirect(url_for('home'))
-    if entry.image_filename:
-        try:
-            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], entry.image_filename))
-        except:
-            pass
     db.session.delete(entry)
     db.session.commit()
     flash('Entry deleted.')
@@ -131,7 +135,6 @@ def delete_entry(id):
 if not os.path.exists('instance'):
     os.mkdir('instance')
 with app.app_context():
-    # Upload-Ordner lokal sicher anlegen (online egal, schadet aber nicht)
     os.makedirs(os.path.join("static", "uploads"), exist_ok=True)
     db.create_all()
 
